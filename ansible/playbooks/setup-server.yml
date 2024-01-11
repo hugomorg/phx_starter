@@ -1,0 +1,38 @@
+- name: Install and update dependencies
+  hosts: "*"
+  become: true
+  roles:
+    - update-deps
+
+- name: Manage users
+  hosts: "*"
+  vars:
+    users_app_user: app
+    users_app_group: app
+    users_deploy_user: deploy
+    users_deploy_group: deploy
+    users_users:
+      - user: hugo
+        name: "Hugo Morgan"
+        github: hugomorg
+        # key: ~/.ssh/server.pub
+    users_admin_users:
+      - hugo
+    users_app_users:
+      - hugo
+    users_deploy_users:
+      - hugo
+    users_deploy_groups:
+      # Allow app group to read files
+      - app
+  roles:
+    - { role: users, become: true }
+
+- name: Install and configure nginx
+  hosts: "*"
+  become: true
+  vars:
+    nginx_server_tokens: "off"
+  roles:
+    - geerlingguy.nginx
+    - configure-nginx

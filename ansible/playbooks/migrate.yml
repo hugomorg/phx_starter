@@ -1,0 +1,7 @@
+- hosts: "*"
+  environment:
+    DATABASE_PASSWORD: "{{ database_password }}"
+    SECRET_KEY_BASE: "{{ secret_key_base }}"
+  tasks:
+    - name: "Migrate"
+      command: "/srv/phx-starter/current/bin/migrate"

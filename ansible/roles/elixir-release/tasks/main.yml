@@ -1,0 +1,11 @@
+---
+# tasks file for app
+
+- import_tasks: dirs.yml
+  tags: ["dirs"]
+
+- import_tasks: systemd.yml
+  tags: ["systemd"]
+
+- import_tasks: deploy.yml
+  tags: ["deploy"]

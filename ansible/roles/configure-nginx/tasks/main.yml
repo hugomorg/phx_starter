@@ -1,0 +1,16 @@
+---
+- name: Create sites-available file
+  vars:
+    server_address: "{{ nginx_server_address }}"
+  template:
+    src: http.j2
+    dest: "/etc/nginx/sites-available/{{ app_name }}"
+    owner: deploy
+    group: app
+    mode: 0644
+
+- name: Link file to sites-enabled
+  file:
+    src: /etc/nginx/sites-available/{{ app_name }}
+    dest: /etc/nginx/sites-enabled/{{ app_name }}
+    state: link

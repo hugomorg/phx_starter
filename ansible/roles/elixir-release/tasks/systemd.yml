@@ -1,0 +1,31 @@
+---
+# tasks file for elixir-release/systemd
+
+- name: Create sudoers config for deploy user
+  template:
+    src: etc/sudoers.d/app.j2
+    dest: /etc/sudoers.d/{{ elixir_release_sudoers_file }}
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create systemd unit
+  # Secrets exposed otherwise: consider env file
+  no_log: true
+  template:
+    src: lib/systemd/system/app.service.j2
+    dest: /lib/systemd/system/{{ elixir_release_service_name }}.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: systemctl daemon-reload
+  # Theoretically ansible_service_mgr is enough, but I have had problems with detection
+  # when: "ansible_service_mgr == 'systemd' or (ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7')"
+
+- name: Enable service
+  no_log: true
+  service:
+    name: "{{ elixir_release_service_name }}"
+    enabled: true
+  environment:
+    PATH: /sbin:{{ ansible_env.PATH }}

@@ -1,0 +1,14 @@
+---
+- name: Set up postgresql
+  hosts: "*"
+  vars:
+    postgresql_databases:
+      - name: phx_starter
+    postgresql_users:
+      - name: app
+        password: "{{ database_password }}"
+        priv: "CREATE"
+        db: phx_starter
+  roles:
+    - role: geerlingguy.postgresql
+      become: yes

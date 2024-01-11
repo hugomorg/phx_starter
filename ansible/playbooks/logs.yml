@@ -1,0 +1,6 @@
+---
+- name: Set up logs
+  hosts: "*"
+  become: true
+  roles:
+    - logrotate

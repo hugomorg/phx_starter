@@ -1,0 +1,6 @@
+---
+- name: Setup HTTPS
+  hosts: "*"
+  become: true
+  roles:
+    - setup-https

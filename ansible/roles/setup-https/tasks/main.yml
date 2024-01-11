@@ -1,0 +1,40 @@
+---
+- name: Set vars
+  set_fact:
+    domain: ""
+    email: ""
+    # todo: move to global
+    app_name: phx_starter
+
+- name: Install certbot
+  community.general.snap:
+    name: certbot
+    classic: true
+
+- name: Link binaries
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+
+- name: Run certbot
+  command: bash -lc "sudo certbot certonly -n --nginx --agree-tos --email {{ email }} --domains www.{{ domain }} --domains {{ domain }}"
+
+- name: Update sites-available file
+  template:
+    src: https.j2
+    dest: "/etc/nginx/sites-available/{{ app_name }}"
+    owner: deploy
+    group: app
+    mode: 0644
+
+- name: Link file to sites-enabled
+  file:
+    src: /etc/nginx/sites-available/{{ app_name }}
+    dest: /etc/nginx/sites-enabled/{{ app_name }}
+    state: link
+
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded

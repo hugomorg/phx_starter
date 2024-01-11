@@ -1,0 +1,75 @@
+---
+# tasks file for elixir-release/deploy
+#
+# These tasks deploy the app. They are run under the deploy user account.
+
+- name: Set vars
+  set_fact:
+    # Name of target dir
+    elixir_release_timestamp: "{{ ansible_date_time['iso8601_basic_short'] }}"
+    releases_to_keep: 10
+
+- name: Create releases dir
+  file:
+    path: "{{ elixir_release_releases_dir }}/{{ elixir_release_timestamp }}"
+    state: directory
+    owner: "{{ elixir_release_deploy_user }}"
+    group: "{{ elixir_release_app_group }}"
+    mode: 0750
+
+- name: Copy release file
+  unarchive:
+    src: "/tmp/{{ elixir_release_app_name }}-{{ elixir_release_version }}.tar.gz"
+    dest: "{{ elixir_release_releases_dir }}/{{ elixir_release_timestamp }}"
+
+- name: Stat current
+  stat:
+    path: "{{ elixir_release_current_dir }}"
+  register: current
+
+- name: Rename current directory
+  command:
+    cmd: mv "{{ elixir_release_current_dir }}" "{{ elixir_release_current_dir }}.old"
+    creates: "{{ elixir_release_current_dir }}.old"
+    removes: "{{ elixir_release_current_dir }}"
+  when: (current.stat.islnk is defined and current.stat.islnk) or (current.stat.exists and current.stat.isdir)
+
+- name: Create current symlink
+  file:
+    src: "{{ elixir_release_releases_dir }}/{{ elixir_release_timestamp }}"
+    dest: "{{ elixir_release_current_dir }}"
+    state: link
+
+- name: Set permissions on release files so app can access them
+  # file:
+  #   path: "{{ item }}"
+  #   owner: "{{ elixir_release_deploy_user }}"
+  #   group: "{{ elixir_release_app_group }}"
+  #   recurse: "yes"
+  #   path: "{{ elixir_release_current_dir }}"
+  # recurse doesn't work on symlinks
+  command: find -H {{ elixir_release_current_dir }} -exec chown {{ elixir_release_deploy_user }}:{{ elixir_release_app_group }} {} \;
+
+- name: Set permissions on release scripts so app can run them
+  command: find -H {{ elixir_release_current_dir }} -executable -type f -exec chmod g+x {} \;
+
+- name: Restart app using systemctl
+  command: sudo /bin/systemctl restart "{{ elixir_release_service_name }}"
+
+- name: Run migrations
+  environment:
+    DATABASE_PASSWORD: "{{ database_password }}"
+    SECRET_KEY_BASE: "{{ secret_key_base }}"
+  command: bash -lc "bin/{{ elixir_release_app_name }} eval {{ elixir_release_app_module }}.Release.migrate"
+  args:
+    chdir: "{{ elixir_release_current_dir }}"
+
+- name: List all releases
+  shell: "ls -t {{ elixir_release_releases_dir }} | tail -n +{{ releases_to_keep + 1 }}"
+  register: ls_output
+
+- name: Remove old releases
+  file:
+    name: "{{ elixir_release_releases_dir }}/{{ item }}"
+    state: absent
+  with_items: "{{ ls_output.stdout_lines }}"
