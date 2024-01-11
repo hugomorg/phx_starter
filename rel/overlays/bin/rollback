@@ -1,0 +1,4 @@
+#!/bin/sh
+cd -P -- "$(dirname -- "$0")"
+
+exec ./phx_starter eval "PhxStarter.Release.rollback(PhxStarter.Repo, $1)"
