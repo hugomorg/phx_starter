@@ -35,3 +35,5 @@ phx_starter-*.tar
 npm-debug.log
 /assets/node_modules/
 
+tags
+.DS_Store
