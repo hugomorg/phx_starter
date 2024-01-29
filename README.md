@@ -5,9 +5,9 @@
 - Create and launch an AWS instance (match ubuntu version with `Dockerfile`)
 - Update SSH config file with temporary IP (or Elastic IP) - make sure entry is there for `ubuntu` user and admin user
 - Update `nginx_server_address` variable (ansible)
-- Run `ansible-galaxy role install geerlingguy.nginx`
-- Run `ansible-galaxy role install geerlingguy.postgresql`
-- In the ansible dir, generate secrets for `database_password` and `secret_key_base`: `ansible-vault encrypt_string [secret] --name [var]`
+- Run `ansible-galaxy role install geerlingguy.nginx` (must be in ansible dir)
+- Run `ansible-galaxy role install geerlingguy.postgresql` (must be in ansible dir)
+- In the ansible dir, generate secrets for `database_password` and `secret_key_base` (must be at least 64 bytes): `ansible-vault encrypt_string [secret] --name [var]`
 - Run `./setup.sh`
 - Check that IP address is same after reboot (if IP dynamically allocated) - if not update SSH config again
 - Move onto first deploy in section below (page won't load at this point)
@@ -23,7 +23,7 @@
 - Create Elastic IP if not already done and associate it with instance
 - Create a DNS record for root domain and `www` (with Elastic IP)
 - Update SSH config to reflect new IP if it has changed
-- Set `email` and `domain` in ansible setup
+- Set `email`, `host` and `domain` in ansible setup
 - Run `./setup_https.sh`
 
 ## Running locally
