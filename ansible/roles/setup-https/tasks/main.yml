@@ -18,7 +18,7 @@
     state: link
 
 - name: Run certbot
-  command: bash -lc "sudo certbot certonly -n --nginx --agree-tos --email {{ email }} --domains www.{{ domain }} --domains {{ domain }}"
+  command: bash -lc "sudo certbot certonly -n --nginx --agree-tos --email {{ email }} --domains www.{{ domain }},{{ domain }}"
 
 - name: Update sites-available file
   template:

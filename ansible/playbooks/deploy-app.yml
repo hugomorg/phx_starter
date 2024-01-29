@@ -2,6 +2,6 @@
   become: true
   vars:
     elixir_release_app_name: phx_starter
-    host: ecobuildr.com
+    host: ""
   roles:
     - elixir-release
